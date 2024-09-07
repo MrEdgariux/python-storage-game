@@ -10,6 +10,7 @@ class Inventory():
     
     def add_disk(self, disk):
         if isinstance(disk, Diskas):
+            disk.disk_id = str(uuid4()) # Generate unique disk id for each disk
             self.disks.append(disk)
         else:
             raise ValueError("Diskas turi būti 'Diskas' klasės objektas")
@@ -18,12 +19,29 @@ class Inventory():
         for disk in self.disks:
             print(disk)
 
-    def remove_disk(self, disk_name):
-        for disk in self.disks:
-            if disk.disk_name == disk_name:
-                self.disks.remove(disk)
-                return disk
-        raise ValueError("Diskas nerastas")
+    def remove_disk(self, disk):
+        if isinstance(disk, Diskas):
+            self.disks.remove(disk)
+            return
+        elif isinstance(disk, str):
+            for d in self.disks:
+                if d.disk_id == disk:
+                    self.disks.remove(d)
+                    return
+        raise ValueError("Diskas nerastas arba formatas netinkamas")
+    
+    def format_disk(self, disk):
+        if isinstance(disk, Diskas):
+            disk.files = []
+            disk.used_size = 0
+            return
+        elif isinstance(disk, str):
+            for d in self.disks:
+                if d.disk_id == disk:
+                    d.files = []
+                    d.used_size = 0
+                    return
+        raise ValueError("Diskas nerastas arba formatas netinkamas")
     
     def __dict__(self):
         return {
@@ -74,12 +92,18 @@ class Diskas():
         else:
             raise ValueError("Failas turi būti 'Failas' klasės objektas")
         
-    def delete_file(self, file_name):
-        for file in self.files:
-            if file.name == file_name:
+    def delete_file(self, file):
+        if isinstance(file, Failas):
+            if file in self.files:
                 self.decrease_size(file.file_size)
                 self.files.remove(file)
                 return
+        elif isinstance(file, str):
+            for f in self.files:
+                if f.name == file:
+                    self.decrease_size(f.file_size)
+                    self.files.remove(f)
+                    return
         raise ValueError("Toks failas neegzistuoja")
     
     def list_files(self):
@@ -138,12 +162,16 @@ class Serveris():
         else:
             raise ValueError("Diskas turi būti 'Diskas' klasės objektas")
         
-    def unmount_disk(self, disk_name):
-        for disk in self.mounted_disks:
-            if disk.disk_name == disk_name:
-                self.mounted_disks.remove(disk)
-                return disk
-        raise ValueError("Diskas nerastas")
+    def unmount_disk(self, disk):
+        if isinstance(disk, Diskas):
+            self.mounted_disks.remove(disk)
+            return
+        elif isinstance(disk, str):
+            for d in self.mounted_disks:
+                if d.disk_id == disk:
+                    self.mounted_disks.remove(d)
+                    return
+        raise ValueError("Diskas nerastas arba formatas netinkamas")
     
     def list_mounted_disks(self):
         for disk in self.mounted_disks:
